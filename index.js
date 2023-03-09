@@ -1,8 +1,10 @@
-const inquirer = require(`inquirer`);
-const fs = require(`fs`);
+const inquirer = require(`inquirer`)
+const fs = require(`fs`)
+const generateHTML = require(`./src/generateHTML`)
 const Manager = require(`./lib/manager`)
 const Engineer = require(`./lib/Engineer`)
 const Intern = require(`./lib/Intern`)
+const myTeam = []
 
 
 const managerQueries = [
@@ -38,6 +40,7 @@ const teamQuery = [
         choices: [
             `Engineer`,
             `Intern`,
+            `Create Team Page`,
             `---Exit Application---`
         ],
         name: `employeeChoice`
@@ -95,3 +98,58 @@ const internQueries = [
         name: `internEmail`
     }
 ]
+
+
+function handleManagerQueries(){
+    inquirer.prompt(managerQueries)
+        .then(responses => {
+            const newManager = new Manager(responses.managerName, responses.managerID, responses.managerEmail, responses.managerOffice);
+            myTeam.push(newManager);
+        })
+        .then(handleTeamQuery);
+}
+
+function handleEngineerQueries(){
+    inquirer.prompt(engineerQueries)
+        .then(responses => {
+            const newEngineer = new Engineer(responses.engineerName, responses.engineerID, responses.engineerEmail, responses.engineerGit);
+            myTeam.push(newEngineer);
+        })
+        .then(handleTeamQuery);
+
+}
+
+function handleInternQueries(){
+    inquirer.prompt(internQueries)
+        .then(responses => {
+            const newIntern = new Intern(responses.internName, responses.internID, responses.internEmail, responses.internSchool);
+            myTeam.push(newIntern);
+        })
+        .then(handleTeamQuery);
+
+}
+
+function createPage(){
+    fs.writeFile(`./dist/index.html`, generateHTML(myTeam), (err) => {if(err){throw err}});
+}
+
+function handleTeamQuery(){
+    inquirer.prompt(teamQuery)
+        .then(function({ employeeChoice }){
+            if(employeeChoice === `Engineer`){
+                handleEngineerQueries();
+            }else if(employeeChoice === `Intern`){
+                handleInternQueries();
+            }else if(employeeChoice === `Create Team Page`){
+                createPage();
+            }else if(employeeChoice === `---Exit Application---`){
+                prompt.ui.close();
+            }
+        })
+}
+
+function init(){
+    handleManagerQueries();
+}
+
+init();
